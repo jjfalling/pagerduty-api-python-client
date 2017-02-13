@@ -9,6 +9,10 @@ from numbers import Number
 from .log import log
 from .errors import (BadRequest, UnknownError, InvalidResponse, InvalidHeaders)
 
+try:
+    basestring = basestring
+except NameError:
+    basestring = (str, bytes)
 
 CONTENT_TYPE = 'application/vnd.pagerduty+json;version=2'
 AUTH_TEMPLATE = 'Token token={0}'
@@ -38,9 +42,9 @@ class ClientMixin(object):
     def _handle_response(self, response):
         if response.status_code == 404:
             response.raise_for_status()
-        elif response.status_code / 100 == 4:
+        elif int(response.status_code / 100) == 4:
             raise BadRequest(response.status_code, response.text)
-        elif response.status_code / 100 != 2:
+        elif int(response.status_code / 100) != 2:
             raise UnknownError(response.status_code, response.text)
 
         if not response.text:

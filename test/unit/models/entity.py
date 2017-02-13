@@ -1,7 +1,10 @@
 # Copyright (c) PagerDuty.
 # See LICENSE for details.
 import unittest
-from urllib import urlencode
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 
 import requests_mock
 
@@ -118,7 +121,7 @@ class EntityTestCase(unittest.TestCase):
         entities, response = self.cls._fetch_page(
             api_key=self.api_key,
         )
-
+        entities = list(entities)
         self.assertTrue(isinstance(entities[0], self.cls))
         self.assertEqual(len(entities), len(entities_data['entities']))
         self.assertEqual(response['total'], None)

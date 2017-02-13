@@ -4,9 +4,18 @@ import re
 import json
 import unittest
 import os.path
-from urllib import urlencode
-from itertools import ifilter
 from operator import itemgetter
+try:
+    # Python 2
+    from itertools import ifilter
+except ImportError:
+    # Python 3
+    pass
+
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 
 import requests_mock
 
@@ -82,16 +91,17 @@ class EntityTestCase(unittest.TestCase):
         url = self.url + '?%s' % urlencode(query)
 
         # filter the dataset to only include eps with "Alexis" in it
-        filtered = filter(
+        filtered = list(filter(
             lambda d: d['name'].count('Alexis'),
             self.query_datas[0]['escalation_policies']
-        )
+        ))
         data = self.query_datas[0].copy()
+
         data['escalation_policies'] = filtered
         m.register_uri('GET', url, json=data, complete_qs=True)
 
         # query for the eps
-        eps = EscalationPolicy.find(api_key=self.api_key, name=name,)
+        eps = EscalationPolicy.find(api_key=self.api_key, name=name)
         self.assertEqual(len(eps), 1)
 
     @requests_mock.Mocker()
@@ -115,14 +125,14 @@ class EntityTestCase(unittest.TestCase):
         # sample_services.json
         for o in ep['services']:
             url = self.base_url + '/services/' + o['id']
-            data = ifilter(
+            data = next(iter(filter(
                 lambda s: s['id'] in intersect,
                 self.service_data
-            ).next()
+            )))
             data = {'service': data, }
-            m.register_uri('GET', url, json=data, complete_qs=True)
+            m.register_uri('GET', url, json=dict(data), complete_qs=True)
 
-        services = ep.services()
+        services = list(ep.services())
         # ensure the number of services were fetched properly
         self.assertEqual(len(services), len(ep['services']))
         # ensure all the proper services are there (by id)

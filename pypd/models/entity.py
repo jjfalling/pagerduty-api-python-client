@@ -8,10 +8,20 @@ via PagerDuty v2 API.
 """
 import re
 import ujson as json
-from itertools import ifilter
+try:
+    # Python 2
+    from future_builtins import filter
+except ImportError:
+    # Python 3
+    pass
 
 from ..mixins import ClientMixin
 from ..log import warn
+
+try:
+    basestring = basestring
+except NameError:
+    basestring = (str, bytes)
 
 
 class NotInitialized(Exception):
@@ -358,7 +368,7 @@ class Entity(ClientMixin):
         # if query is not provided, use the first parameter we removed from
         # the kwargs
         try:
-            output['query'] = ifilter(None, values).next()
+            output['query'] = next(filter(None, values))
         except StopIteration:
             pass
 
@@ -427,7 +437,7 @@ class Entity(ClientMixin):
 
         # call find and extract the first iterated value from the result
         iterable = iter(cls.find(*args, **kwargs))
-        return iterable.next()
+        return next(iter(iterable))
 
     @classmethod
     def create(cls, data=None, api_key=None, endpoint=None, add_headers=None,
