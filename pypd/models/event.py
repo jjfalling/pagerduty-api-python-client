@@ -19,12 +19,12 @@ class Event(Entity):
     def validate(cls, event_info):
         """Validate that provided event information is valid."""
         assert 'service_key' in event_info
-        assert isinstance(event_info['service_key'], basestring)
+        assert isinstance(event_info['service_key'], str)
         assert 'event_type' in event_info
         assert event_info['event_type'] in cls.EVENT_TYPES
         if event_info['event_type'] != cls.EVENT_TYPES[0]:
             assert 'incident_key' in event_info
-            assert isinstance(event_info['incident_key'], basestring)
+            assert isinstance(event_info['incident_key'], str)
         else:
             assert 'description' in event_info
 
@@ -32,7 +32,7 @@ class Event(Entity):
             assert isinstance(event_info['details'], dict)
 
         if 'contexts' in event_info:
-            assert isinstance(event_info['contexts'], (list, tuple,))
+            assert isinstance(event_info['contexts'], (list, tuple))
 
     @classmethod
     def create(cls, data=None, api_key=None, endpoint=None, add_headers=None,
